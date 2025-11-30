@@ -1,0 +1,4 @@
+cpf,data_nascimento,score,limite,renda_mensal,tipo_emprego,despesas,dependentes,tem_dividas
+12345678900,1990-01-01,559,1000.0,3000.0,formal,1500.0,1,nao
+98765432100,1985-05-15,800,6000.0,8000.0,autonomo,2000.0,2,nao
+11122233344,2000-12-31,300,500.0,1500.0,desempregado,800.0,0,sim

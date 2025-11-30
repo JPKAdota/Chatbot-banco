@@ -1,0 +1,7 @@
+langchain
+langgraph
+streamlit
+pandas
+python-dotenv
+langchain-google-genai==3.0.0
+requests
