@@ -41,7 +41,12 @@ O sistema utiliza uma arquitetura multi-agente orquestrada pelo **LangGraph**, o
     - *Desafio*: Evitar que o LLM invente dados ou formatos inválidos.
     - *Solução*: Uso estrito de *Tools* (ferramentas Python) para todas as operações de dados e *System Prompts* que proíbem formatação LaTeX e instruem o uso de linguagem natural simples para valores monetários.
 
-## Escolhas Técnicas e Justificativas
+4. **Conflito de Renderização Markdown/LaTeX**:
+
+    - *Desafio*: O Streamlit utiliza Markdown que interpreta o símbolo de cifrão ($) como indicador de fórmulas matemáticas (LaTeX). Quando o agente retornava valores monetários (ex: "R$ 1.000,00"), a interface tentava renderizar o texto como uma equação, gerando erros de formatação (LaTeX-incompatible input) e ocultando o texto.
+    - *Solução*: Implementação de uma regra de formatação nas ferramentas (tools) para "escapar" o símbolo de cifrão. Todas as saídas monetárias foram alteradas de R$ para R\$, garantindo que o Streamlit interprete o cifrão como texto literal e não como comando matemático.
+   
+## Escolhas Técnicas e Justificativas.
 
 - **Python 3.12+**: Linguagem moderna e robusta para IA e manipulação de dados.
 - **LangChain & LangGraph**:
@@ -51,6 +56,7 @@ O sistema utiliza uma arquitetura multi-agente orquestrada pelo **LangGraph**, o
 - **Streamlit**:
     - *Justificativa*: Permite a criação rápida de interfaces de dados interativas em Python puro, ideal para prototipagem e demonstração de agentes.
 - **Pandas**: Para manipulação eficiente da base de dados simulada (CSV).
+- **Exchangerate.host API**: Serviço externo utilizado para obter as taxas de câmbio em tempo real.
 
 ## Tutorial de Execução e Testes
 
