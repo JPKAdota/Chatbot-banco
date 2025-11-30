@@ -43,7 +43,7 @@ O sistema utiliza uma arquitetura multi-agente orquestrada pelo **LangGraph**, o
 
 4. **Conflito de Renderização Markdown/LaTeX**:
 
-    - *Desafio*: O Streamlit utiliza Markdown que interpreta o símbolo de cifrão ($) como indicador de fórmulas matemáticas (LaTeX). Quando o agente retornava valores monetários (ex: "R$ 1.000,00"), a interface tentava renderizar o texto como uma equação, gerando erros de formatação (LaTeX-incompatible input) e ocultando o texto.
+    - *Desafio*: O Streamlit utiliza Markdown que interpreta o símbolo de cifrão como indicador de fórmulas matemáticas (LaTeX). Quando o agente retornava valores monetários (ex: "R$ 1.000,00"), a interface tentava renderizar o texto como uma equação, gerando erros de formatação (LaTeX-incompatible input) e ocultando o texto.
     - *Solução*: Implementação de uma regra de formatação nas ferramentas (tools) para "escapar" o símbolo de cifrão. Todas as saídas monetárias foram alteradas de R$ para R\$, garantindo que o Streamlit interprete o cifrão como texto literal e não como comando matemático.
    
 ## Escolhas Técnicas e Justificativas.
