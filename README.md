@@ -1,55 +1,98 @@
 # Banco Ágil - Agente de Atendimento Inteligente
 
-Este projeto implementa um sistema de atendimento bancário automatizado utilizando Agentes de IA. O sistema é capaz de autenticar usuários, consultar limites, processar solicitações de aumento de crédito, realizar entrevistas para atualização de score e fornecer cotações de moedas.
+## Visão Geral do Projeto
 
-## Arquitetura
+Este projeto implementa um sistema de atendimento bancário automatizado utilizando Agentes de IA. O sistema é capaz de autenticar usuários, consultar limites, processar solicitações de aumento de crédito, realizar entrevistas para atualização de score e fornecer cotações de moedas. O objetivo é demonstrar uma arquitetura robusta de agentes autônomos aplicados ao contexto financeiro.
 
-O sistema utiliza uma arquitetura multi-agente orquestrada pelo **LangGraph**:
+## Arquitetura do Sistema
 
-- **Agente de Triagem**: Responsável pela autenticação do usuário (CPF e Data de Nascimento).
-- **Agente de Crédito**: Gerencia consultas e solicitações de limite de crédito.
-- **Agente de Entrevista**: Conduz uma entrevista para recalcular o score de crédito do cliente.
-- **Agente de Câmbio**: Fornece cotações de moedas.
+O sistema utiliza uma arquitetura multi-agente orquestrada pelo **LangGraph**, onde cada agente possui responsabilidades específicas e ferramentas dedicadas.
 
-A interface do usuário é construída com **Streamlit**.
+### Agentes e Fluxos
+- **Agente de Triagem**: Ponto de entrada. Responsável pela autenticação do usuário (CPF e Data de Nascimento). Se falhar 3 vezes, encerra o atendimento.
+- **Agente de Crédito**: Gerencia consultas de limite e solicitações de aumento. Verifica regras de negócio baseadas no score do cliente.
+- **Agente de Entrevista**: Conduz uma entrevista interativa para coletar dados financeiros (renda, despesas, etc.) e recalcular o score de crédito do cliente em tempo real.
+- **Agente de Câmbio**: Fornece cotações de moedas em tempo real utilizando uma API externa.
 
-## Tecnologias
+### Manipulação de Dados
+- Os dados dos clientes são simulados em arquivos CSV na pasta `data/`.
+- O estado da conversa (autenticação, histórico de mensagens) é mantido globalmente pelo objeto `AgentState` do LangGraph, permitindo que diferentes agentes compartilhem o contexto sem perder informações.
 
-- Python 3.12+
-- LangChain & LangGraph
-- Google Gemini (LLM)
-- Streamlit
-- Pandas
+## Funcionalidades Implementadas
 
-## Configuração e Execução
+- **Autenticação Segura**: Validação de CPF e Data de Nascimento contra uma base de dados.
+- **Consulta de Limite**: Visualização imediata do limite de crédito disponível.
+- **Solicitação de Aumento de Limite**: Análise automática baseada no score atual.
+- **Atualização de Score (Entrevista)**: Processo interativo onde o usuário fornece dados atualizados para tentar melhorar seu score e, consequentemente, seu limite.
+- **Cotação de Moedas**: Consulta de taxas de câmbio atualizadas (ex: Dólar, Euro).
+- **Interface Chat**: Interface amigável construída com Streamlit.
+
+## Desafios Enfrentados e Como Foram Resolvidos
+
+1.  **Manutenção de Contexto entre Agentes**:
+    - *Desafio*: Garantir que o agente de Crédito saiba que o usuário já foi autenticado pelo agente de Triagem sem pedir os dados novamente.
+    - *Solução*: Utilização do `AgentState` do LangGraph para compartilhar um estado global (variáveis `authenticated`, `cpf`, `messages`) entre todos os nós do grafo.
+
+2.  **Roteamento de Intenção Ambígua**:
+    - *Desafio*: Distinguir quando o usuário quer "ver saldo" (Crédito) ou "ver cotação" (Câmbio) apenas pelo texto, ou quando ele apenas concorda ("sim") com uma oferta anterior.
+    - *Solução*: Implementação de um `main_router` híbrido que analisa palavras-chave e verifica o histórico imediato da conversa (última mensagem da IA) para entender o contexto de respostas curtas.
+
+3.  **Consistência nas Respostas do LLM**:
+    - *Desafio*: Evitar que o LLM invente dados ou formatos inválidos.
+    - *Solução*: Uso estrito de *Tools* (ferramentas Python) para todas as operações de dados e *System Prompts* que proíbem formatação LaTeX e instruem o uso de linguagem natural simples para valores monetários.
+
+## Escolhas Técnicas e Justificativas
+
+- **Python 3.12+**: Linguagem moderna e robusta para IA e manipulação de dados.
+- **LangChain & LangGraph**:
+    - *Justificativa*: O LangGraph foi escolhido por permitir a criação de fluxos cíclicos e controle de estado granular, essencial para um sistema onde o usuário pode transitar livremente entre diferentes contextos (crédito, câmbio, entrevista).
+- **Google Gemini (LLM)**:
+    - *Justificativa*: Modelo com excelente janela de contexto e raciocínio lógico, oferecendo um bom equilíbrio entre performance e custo.
+- **Streamlit**:
+    - *Justificativa*: Permite a criação rápida de interfaces de dados interativas em Python puro, ideal para prototipagem e demonstração de agentes.
+- **Pandas**: Para manipulação eficiente da base de dados simulada (CSV).
+
+## Tutorial de Execução e Testes
+
+### Pré-requisitos
+- Python 3.12 ou superior instalado.
+- Uma chave de API do Google (Gemini).
+
+### Instalação
 
 1. **Clone o repositório** (ou baixe os arquivos).
-
 2. **Crie um ambiente virtual e instale as dependências:**
    ```bash
    python -m venv venv
    .\venv\Scripts\activate  # Windows
    pip install -r requirements.txt
    ```
-
 3. **Configure a chave da API:**
-   - O arquivo `.env` já deve conter a chave `GOOGLE_API_KEY`.
+   - O arquivo `.env` contém a chave `GOOGLE_API_KEY`.
+
+### Execução
 
 4. **Execute a aplicação:**
    ```bash
    streamlit run app.py
    ```
+   
+   > **Dica (Windows):** Você também pode executar o arquivo `run_app.bat` para iniciar a aplicação automaticamente.
 
-## Uso
+### Roteiro de Testes
 
-1. Ao abrir a aplicação, inicie a conversa (ex: "Olá").
-2. Forneça um CPF e Data de Nascimento válidos para autenticação.
-   - **Teste 1**: CPF `12345678900`, Data `1990-01-01`
-   - **Teste 2**: CPF `98765432100`, Data `1985-05-15`
-3. Após autenticado, você pode:
-   - Perguntar seu limite de crédito.
-   - Pedir aumento de limite.
-   - Solicitar cotação do dólar.
+1. **Autenticação**:
+   - Inicie a conversa com "Olá".
+   - Forneça CPF `12345678900` e Data `1990-01-01`.
+2. **Crédito**:
+   - Pergunte "Qual meu limite?".
+   - Peça "Aumentar meu limite para 5000".
+3. **Entrevista**:
+   - Se o aumento for negado, aceite fazer a entrevista.
+   - Responda as perguntas (Renda, Emprego, etc.).
+   - Verifique se o score foi atualizado.
+4. **Câmbio**:
+   - Pergunte "Quanto está o dólar?".
 
 ## Estrutura de Arquivos
 
